@@ -44,7 +44,7 @@ bot.dialog('/', [
             ]);
         var msg = new builder.Message(session).attachments([card]);
         session.send(msg);
-        session.send("Hi... I'm the Microsoft Bot Framework demo bot for Facebook. I can show you everything you can use our Bot Builder SDK to do on Facebook.");
+        session.send("Hi... I'm the Microsoft Bot Framework demo bot for Facebook v1.1. I can show you everything you can use our Bot Builder SDK to do on Facebook.");
         session.beginDialog('/help');
     },
     function (session, results) {
