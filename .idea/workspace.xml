@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a519d837-b8d7-440a-9b5f-4e87be381d5e" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -162,7 +161,7 @@
       <workItem from="1481874315775" duration="598000" />
       <workItem from="1481876466022" duration="253000" />
       <workItem from="1481876757005" duration="474000" />
-      <workItem from="1481877262505" duration="559000" />
+      <workItem from="1481877262505" duration="607000" />
     </task>
     <task id="LOCAL-00001" summary="v1.1">
       <created>1481617524552</created>
@@ -171,11 +170,18 @@
       <option name="project" value="LOCAL" />
       <updated>1481617524552</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="removed workspace.xml">
+      <created>1481912816716</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1481912816716</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2355000" />
+    <option name="totallyTimeSpent" value="2403000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1440" y="-540" width="2560" height="1440" extended-state="0" />
@@ -226,7 +232,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="v1.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="v1.1" />
+    <MESSAGE value="removed workspace.xml" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed workspace.xml" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
