@@ -4,12 +4,14 @@
   "description": "Wow!",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_ENV=development nodemon messages/tron.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "botbuilder": "^3.4.4",
+    "dotenv": "^2.0.0",
     "restify": "^4.3.0"
   }
 }

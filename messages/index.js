@@ -1,8 +1,11 @@
 "use strict";
 var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
+require('dotenv').load();
 
 var useEmulator = (process.env.NODE_ENV == 'development');
+
+console.log("em:" + useEmulator);
 
 var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure.BotServiceConnector({
     appId: process.env['MicrosoftAppId'],
