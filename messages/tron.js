@@ -41,6 +41,20 @@ bot.dialog('/', [
   }
 ]);
 
+bot.dialog('/morning-journal', [
+  function (session) {
+    session.send('Rankings from 1-9: 1 > awful,depressed; 5 > neutral 9 > extermely happy, motivated')
+    builder.Prompts.number(session, 'How did you feel when you woke up this morning? [1-9]');
+  },
+  function (session, results) {
+    builder.Prompts.text(session, 'How do you feel right now? Reflect on what is influencing this?');
+  },
+  function (session, results, next) {
+    session.send('thanks for you entry: ' + results.response)
+    next();
+  }
+])
+
 bot.dialog('/morning-motivation', [
   function moreThings(session, numRequested) {
     if (numRequested == null) numRequested = 3;
@@ -53,9 +67,7 @@ bot.dialog('/morning-motivation', [
           session.send('#### ' + card.title + '\n' + card.description);
         }
       }
-      // for (let i = 0; i < numRequested; i++) {
-      //   session.send(dataBase.data[i].description);
-      // }
+   
 
       builder.Prompts.choice(session, 'Do you want more, or do you want to move on?', ['more', 'next', 'quit']);
     })
