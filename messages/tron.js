@@ -45,10 +45,13 @@ bot.dialog('/morning-motivation', [
   function moreThings(session, numRequested) {
     if (numRequested == null) numRequested = 3;
 
-    request('http://localhost:3333/cards/random/5', function (error, response, body) {
+    request('http://localhost:3333/cards/random/' + numRequested, function (error, response, body) {
       if (!error && response.statusCode == 200) {
-        console.log(body) // Show the HTML for the Google homepage.
-        session.send(body)
+
+        for (var card of JSON.parse(body)) {
+
+          session.send('#### ' + card.title + '\n' + card.description);
+        }
       }
       // for (let i = 0; i < numRequested; i++) {
       //   session.send(dataBase.data[i].description);
@@ -58,7 +61,7 @@ bot.dialog('/morning-motivation', [
     })
   },
   function (session, results, next) {
-    if (results.response.entity === 'more') session.beginDialog('/motivate', 2);
+    if (results.response.entity === 'more') session.beginDialog('/morning-motivation', 2);
     if (results.response.entity === 'next') session.replaceDialog('/journal')
     if (results.response.entity === 'quit') session.endDialog();
   }
