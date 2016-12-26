@@ -2,7 +2,7 @@
 var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
 require('dotenv').load();
-var dataBase = require('./content/motivation');
+var journalTemplate = require('./content/morningJournal');
 var request = require('request');
 
 var useEmulator = (process.env.NODE_ENV == 'development');
@@ -41,19 +41,34 @@ bot.dialog('/', [
   }
 ]);
 
-bot.dialog('/morning-journal', [
-  function (session) {
-    session.send('Rankings from 1-9: 1 > awful,depressed; 5 > neutral 9 > extermely happy, motivated')
-    builder.Prompts.number(session, 'How did you feel when you woke up this morning? [1-9]');
-  },
-  function (session, results) {
-    builder.Prompts.text(session, 'How do you feel right now? Reflect on what is influencing this?');
-  },
+
+var diagArray = [];
+
+
+for (var q of journalTemplate.structure.questions) {
+  if (q.type === 'nine-scale-question') {
+    diagArray.push(function (session) {
+      if (q.additonalInfo != null) session.send('*' + q.additonalInfo + '*')
+      builder.Prompts.number(session, q.question);
+    })
+  }
+  else if (q.type === 'open-question') {
+    diagArray.push(function (session) {
+      builder.Prompts.text(session, q.question)
+    })
+  }
+}
+diagArray.push(
   function (session, results, next) {
     session.send('thanks for you entry: ' + results.response)
-    next();
+    next()
   }
-])
+);
+
+
+bot.dialog('/morning-journal', diagArray)
+
+
 
 bot.dialog('/morning-motivation', [
   function moreThings(session, numRequested) {
@@ -63,18 +78,16 @@ bot.dialog('/morning-motivation', [
       if (!error && response.statusCode == 200) {
 
         for (var card of JSON.parse(body)) {
-
           session.send('#### ' + card.title + '\n' + card.description);
         }
       }
-   
 
       builder.Prompts.choice(session, 'Do you want more, or do you want to move on?', ['more', 'next', 'quit']);
     })
   },
   function (session, results, next) {
     if (results.response.entity === 'more') session.beginDialog('/morning-motivation', 2);
-    if (results.response.entity === 'next') session.replaceDialog('/journal')
+    if (results.response.entity === 'next') session.replaceDialog('/morning-journal')
     if (results.response.entity === 'quit') session.endDialog();
   }
 ]);
@@ -105,7 +118,6 @@ function mainRouter(message) {
   }
   return 'main';
 }
-
 
 if (useEmulator) {
   var restify = require('restify');
