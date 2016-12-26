@@ -43,7 +43,7 @@ bot.dialog('/', [
 
 
 var diagArray = [];
-
+// there might be an example of a loop in the examples!
 
 for (var q of journalTemplate.structure.questions) {
   if (q.type === 'nine-scale-question') {
