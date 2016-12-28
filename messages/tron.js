@@ -81,6 +81,9 @@ bot.dialog('/morning-motivation', [
           session.send('#### ' + card.title + '\n' + card.description);
         }
       }
+      else{
+        console.log('Error: ' + error)
+      }
 
       builder.Prompts.choice(session, 'Do you want more, or do you want to move on?', ['more', 'next', 'quit']);
     })
