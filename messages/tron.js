@@ -19,6 +19,18 @@ var bot = new builder.UniversalBot(connector, []);
 bot.endConversationAction('bye', 'bye :)', { matches: /^bye/i });
 bot.beginDialogAction('go', '/', { matches: /^go/i });
 
+function mainRouter(message) {
+  if (message.toLowerCase().includes('morning')) {
+    return 'morning-motivation';
+  }
+  if (message.toLowerCase().includes('journal')) {
+    return 'journal';
+  }
+  if (message.toLowerCase().includes('hi')) {
+    return 'main';
+  }
+  return 'main';
+}
 
 bot.dialog('/', [
   function (session, args, next) {
@@ -41,20 +53,21 @@ bot.dialog('/', [
   }
 ]);
 
-
 var diagArray = [];
 // there might be an example of a loop in the examples!
 
 for (var q of journalTemplate.structure.questions) {
   if (q.type === 'nine-scale-question') {
-    diagArray.push(function (session) {
-      if (q.additonalInfo != null) session.send('*' + q.additonalInfo + '*')
-      builder.Prompts.number(session, q.question);
+    diagArray.push( (session) => {
+      let qtn = q;
+      if (qtn.additonalInfo != null) session.send('*' + qtn.additonalInfo + '*')
+      builder.Prompts.number(session, qtn.question);
     })
   }
   else if (q.type === 'open-question') {
     diagArray.push(function (session) {
-      builder.Prompts.text(session, q.question)
+      let qtn = q;
+      builder.Prompts.text(session, qtn.question)
     })
   }
 }
@@ -108,19 +121,6 @@ bot.dialog('/journal', [
     next();
   }
 ]);
-
-function mainRouter(message) {
-  if (message.toLowerCase().includes('morning')) {
-    return 'morning-motivation';
-  }
-  if (message.toLowerCase().includes('journal')) {
-    return 'journal';
-  }
-  if (message.toLowerCase().includes('hi')) {
-    return 'main';
-  }
-  return 'main';
-}
 
 if (useEmulator) {
   var restify = require('restify');
