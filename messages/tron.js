@@ -58,14 +58,14 @@ var diagArray = [];
 
 for (var q of journalTemplate.structure.questions) {
   if (q.type === 'nine-scale-question') {
-    diagArray.push( (session) => {
+    diagArray.push((session) => {
       let qtn = q;
       if (qtn.additonalInfo != null) session.send('*' + qtn.additonalInfo + '*')
       builder.Prompts.number(session, qtn.question);
     })
   }
   else if (q.type === 'open-question') {
-    diagArray.push(function (session) {
+    diagArray.push( (session) => {
       let qtn = q;
       builder.Prompts.text(session, qtn.question)
     })
@@ -94,7 +94,7 @@ bot.dialog('/morning-motivation', [
           session.send('#### ' + card.title + '\n' + card.description);
         }
       }
-      else{
+      else {
         console.log('Error: ' + error)
       }
 
