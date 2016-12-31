@@ -3,7 +3,7 @@ var botbuilder_azure = require("botbuilder-azure");
 
 var journalTemplate = require('./content/morningJournal').structure;
 
-exports.journalDialog = function(bot){
+exports.journalDialog = function (bot) {
     bot.dialog('/journal', [
         function (session, args) {
             // Save previous state (create on first call)
