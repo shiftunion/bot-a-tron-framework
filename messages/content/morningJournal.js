@@ -42,8 +42,7 @@ exports.structure =
             {
                 type: 'open-question',
                 id: 'resonating-today',
-                question: 'What is your anchor task for today?',
-                additonalInfo: 'One thing that if completed would make today a success',
+                question: 'What truth or question is resonating right now?',
             }
         ]
     }
