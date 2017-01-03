@@ -29,6 +29,9 @@ exports.journalDialog = function (bot) {
             // Check for end of form
             if (session.dialogData.index >= journalTemplate.questions.length) {
                 // Return completed form
+
+                
+
                 session.endDialogWithResult({ response: session.dialogData.form });
             } else {
                 // Next field
@@ -36,4 +39,9 @@ exports.journalDialog = function (bot) {
             }
         }
     ]);
+}
+
+function saveJournalEntriesToTrello(formData)
+{
+
 }
