@@ -30,8 +30,6 @@ exports.journalDialog = function (bot) {
             if (session.dialogData.index >= journalTemplate.questions.length) {
                 // Return completed form
 
-                
-
                 session.endDialogWithResult({ response: session.dialogData.form });
             } else {
                 // Next field
