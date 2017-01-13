@@ -3,6 +3,8 @@ var botbuilder_azure = require("botbuilder-azure");
 
 var journalTemplate = require('./content/morningJournal').structure;
 
+var request = require('request');
+
 exports.journalDialog = function (bot) {
     bot.dialog('/journal', [
         function (session, args) {
@@ -39,7 +41,17 @@ exports.journalDialog = function (bot) {
     ]);
 }
 
-function saveJournalEntriesToTrello(formData)
-{
+function saveJournalEntriesToTrello(formData) {
+    request('http://localhost:3333/cards/random/' + numRequested, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        for (var card of JSON.parse(body)) {
+          session.send('#### ' + card.title + '\n' + card.description);
+        }
+      }
+      else {
+        console.log('Error: ' + error)
+      }
 
+      builder.Prompts.choice(session, 'Do you want more, or do you want to move on?', ['more', 'next', 'quit']);
+    })
 }

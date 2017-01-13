@@ -55,6 +55,7 @@ bot.dialog('/', [
 ]);
 
 journal.journalDialog(bot);
+// ToDo: Dynimically load bots in a specific folder
 
 bot.dialog('/morning-motivation', [
   function moreThings(session, numRequested) {
