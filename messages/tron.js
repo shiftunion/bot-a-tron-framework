@@ -47,9 +47,6 @@ bot.dialog('/', [
     }
   },
   function (session, results) {
-    session.replaceDialog('/')
-  },
-  function (session, results) {
     session.send('thanks dude, all done for now')
   }
 ]);
@@ -82,7 +79,7 @@ bot.dialog('/morning-motivation', [
   }
 ]);
 
-// todo: run the journal code
+
 
 if (useEmulator) {
   var restify = require('restify');

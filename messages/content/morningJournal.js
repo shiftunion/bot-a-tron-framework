@@ -11,7 +11,7 @@ exports.structure =
                 question: 'How did you feel when you woke up this morning? [1-9]',
                 additonalInfo: 'Rankings from 1-9: \n 1 > awful,depressed \n 5 > neutral \n 9 > extermely happy, motivated'
             },
-            {
+          /*  {
                 type: 'nine-scale-question',
                 id: 'feeling-now-scale',
                 question: 'How did do you feel now? [1-9]',
@@ -38,7 +38,7 @@ exports.structure =
                 id: 'today-goals',
                 question: 'What is your anchor task for today?',
                 additonalInfo: 'One thing that if completed would make today a success',
-            },
+            },*/
             {
                 type: 'open-question',
                 id: 'resonating-today',
