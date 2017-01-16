@@ -47,6 +47,9 @@ bot.dialog('/', [
     }
   },
   function (session, results) {
+    session.replaceDialog('/')
+  },
+  function (session, results) {
     session.send('thanks dude, all done for now')
   }
 ]);
@@ -76,6 +79,9 @@ bot.dialog('/morning-motivation', [
     if (results.response.entity === 'more') session.beginDialog('/morning-motivation', 2);
     if (results.response.entity === 'next') session.replaceDialog('/journal')
     if (results.response.entity === 'quit') session.endDialog();
+  },
+  function (session, results) {
+        session.send("Excellent dude", results.response);
   }
 ]);
 
