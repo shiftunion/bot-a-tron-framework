@@ -11,7 +11,7 @@ var journalGuid = crypto.randomBytes(8).toString("hex");
 exports.journalDialog = function (bot) {
     bot.dialog('/journal', [
         function (session, args) {
-            // Save previous state (or create on first call)
+            // Save previous state (alternatively create on first call)
             session.dialogData.index = args ? args.index : 0;
            // session.dialogData.form = args ? args.form : {};
             session.dialogData.questions = args ? args.questions : [];
