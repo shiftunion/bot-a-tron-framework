@@ -18,7 +18,7 @@ var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure
 var bot = new builder.UniversalBot(connector, []);
 
 bot.endConversationAction('bye', 'bye :)', { matches: /^bye/i });
-bot.beginDialogAction('go', '/', { matches: /^go/i });
+bot.beginDialogAction('go', '/dude', { matches: /^go/i });
 
 function mainRouter(message) {
   if (message.toLowerCase().includes('morning')) {
@@ -47,7 +47,7 @@ bot.dialog('/', [
     }
   },
   function (session, results) {
-    session.replaceDialog('/')
+    session.replaceDialog('/dude')
   },
   function (session, results) {
     session.send('thanks dude, all done for now')
