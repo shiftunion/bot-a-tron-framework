@@ -25,12 +25,62 @@ var bot = new builder.UniversalBot(connector);
 // Anytime the major version is incremented any existing conversations will be restarted.
 bot.use(builder.Middleware.dialogVersion({ version: 1.0, resetCommand: /^reset/i }));
 
+bot.on('conversationUpdate', function (message) {
+   // Check for group conversations
+    if (message.address.conversation.isGroup) {
+        // Send a hello message when bot is added
+        if (message.membersAdded) {
+            message.membersAdded.forEach(function (identity) {
+                if (identity.id === message.address.bot.id) {
+                    var reply = new builder.Message()
+                            .address(message.address)
+                            .text("Hello everyone!");
+                    bot.send(reply);
+                }
+            });
+        }
+
+        // Send a goodbye message when bot is removed
+        if (message.membersRemoved) {
+            message.membersRemoved.forEach(function (identity) {
+                if (identity.id === message.address.bot.id) {
+                    var reply = new builder.Message()
+                        .address(message.address)
+                        .text("Goodbye");
+                    bot.send(reply);
+                }
+            });
+        }
+    }
+});
+
+bot.on('contactRelationUpdate', function (message) {
+    if (message.action === 'add') {
+        var name = message.user ? message.user.name : null;
+        var reply = new builder.Message()
+                .address(message.address)
+                .text("Hello %s... Thanks for adding me. Say 'hello' to see some great demos.", name || 'there');
+        bot.send(reply);
+    } else {
+        // delete their data
+    }
+});
+
+bot.on('typing', function (message) {
+    // User is typing
+});
+
+bot.on('deleteUserData', function (message) {
+    // User asked to delete their data
+});
+
+
 //=========================================================
-// Bots Global Actions
+// Bots Middleware
 //=========================================================
 
-bot.endConversationAction('goodbye', 'Goodbye :)', { matches: /^goodbye/i });
-bot.beginDialogAction('help', '/help', { matches: /^help/i });
+// Anytime the major version is incremented any existing conversations will be restarted.
+bot.use(builder.Middleware.dialogVersion({ version: 1.0, resetCommand: /^reset/i }));
 
 //=========================================================
 // Bots Dialogs
@@ -38,7 +88,7 @@ bot.beginDialogAction('help', '/help', { matches: /^help/i });
 
 bot.dialog('/', [
     function (session) {
-        // Send a greeting and show help.
+        // Send a greeting and start the menu.
         var card = new builder.HeroCard(session)
             .title("Microsoft Bot Framework")
             .text("Your bots - wherever your users are talking.")
@@ -47,11 +97,7 @@ bot.dialog('/', [
             ]);
         var msg = new builder.Message(session).attachments([card]);
         session.send(msg);
-        session.send("Hi... I'm the Microsoft Bot Framework demo bot for Facebook v1.1. I can show you everything you can use our Bot Builder SDK to do on Facebook.");
-        session.beginDialog('/help');
-    },
-    function (session, results) {
-        // Display menu
+        session.send("Hi... I'm the Microsoft Bot Framework demo bot for Slack. I can show you everything you can use our Bot Builder SDK to do on Slack.");
         session.beginDialog('/menu');
     },
     function (session, results) {
@@ -62,7 +108,7 @@ bot.dialog('/', [
 
 bot.dialog('/menu', [
     function (session) {
-        builder.Prompts.choice(session, "What demo would you like to run?", "prompts|picture|cards|list|carousel|receipt|actions|(quit)");
+        builder.Prompts.choice(session, "What demo would you like to run?", "prompts|picture|cards|list|carousel|receipt|(quit)", { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
         if (results.response && results.response.entity != '(quit)') {
@@ -77,12 +123,6 @@ bot.dialog('/menu', [
         // The menu runs a loop until the user chooses to (quit).
         session.replaceDialog('/menu');
     }
-]).reloadAction('reloadMenu', null, { matches: /^menu|show menu/i });
-
-bot.dialog('/help', [
-    function (session) {
-        session.endDialog("Global commands that are available anytime:\n\n* menu - Exits a demo and returns to the menu.\n* goodbye - End this conversation.\n* help - Displays these commands.");
-    }
 ]);
 
 bot.dialog('/prompts', [
@@ -91,37 +131,65 @@ bot.dialog('/prompts', [
         builder.Prompts.text(session, "Prompts.text()\n\nEnter some text and I'll say it back.");
     },
     function (session, results) {
-        session.send("You entered '%s'", results.response);
-        builder.Prompts.number(session, "Prompts.number()\n\nNow enter a number.");
+        if (results && results.response) {
+            session.send("You entered '%s'", results.response);
+            builder.Prompts.number(session, "Prompts.number()\n\nNow enter a number.");
+        } else {
+            session.endDialog("You canceled.");
+        }
     },
     function (session, results) {
-        session.send("You entered '%s'", results.response);
-        session.send("Bot Builder includes a rich choice() prompt that lets you offer a user a list choices to pick from. On Facebook these choices by default surface using Quick Replies if there are 10 or less choices. If there are more than 10 choices a numbered list will be used but you can specify the exact type of list to show using the ListStyle property.");
-        builder.Prompts.choice(session, "Prompts.choice()\n\nChoose a list style (the default is auto.)", "auto|inline|list|button|none");
+        if (results && results.response) {
+            session.send("You entered '%s'", results.response);
+            session.send("Bot Builder includes a rich choice() prompt that lets you offer a user a list choices to pick from. On Facebook these choices by default surface using buttons if there are 3 or less choices. If there are more than 3 choices a numbered list will be used but you can specify the exact type of list to show using the ListStyle property.");
+            builder.Prompts.choice(session, "Prompts.choice()\n\nChoose a list style (the default is auto.)", "auto|inline|list|button|none");
+        } else {
+            session.endDialog("You canceled.");
+        }
     },
     function (session, results) {
-        var style = builder.ListStyle[results.response.entity];
-        builder.Prompts.choice(session, "Prompts.choice()\n\nNow pick an option.", "option A|option B|option C", { listStyle: style });
+        if (results && results.response) {
+            var style = builder.ListStyle[results.response.entity];
+            builder.Prompts.choice(session, "Prompts.choice()\n\nNow pick an option.", "option A|option B|option C", { listStyle: style });
+        } else {
+            session.endDialog("You canceled.");
+        }
     },
     function (session, results) {
-        session.send("You chose '%s'", results.response.entity);
-        builder.Prompts.confirm(session, "Prompts.confirm()\n\nSimple yes/no questions are possible. Answer yes or no now.");
+        if (results && results.response) {
+            session.send("You chose '%s'", results.response.entity);
+            builder.Prompts.confirm(session, "Prompts.confirm()\n\nSimple yes/no questions are possible. Answer yes or no now.");
+        } else {
+            session.endDialog("You canceled.");
+        }
     },
     function (session, results) {
-        session.send("You chose '%s'", results.response ? 'yes' : 'no');
-        builder.Prompts.time(session, "Prompts.time()\n\nThe framework can recognize a range of times expressed as natural language. Enter a time like 'Monday at 7am' and I'll show you the JSON we return.");
+        if (results && results.resumed == builder.ResumeReason.completed) {
+            session.send("You chose '%s'", results.response ? 'yes' : 'no');
+            builder.Prompts.time(session, "Prompts.time()\n\nThe framework can recognize a range of times expressed as natural language. Enter a time like 'Monday at 7am' and I'll show you the JSON we return.");
+        } else {
+            session.endDialog("You canceled.");
+        }
     },
     function (session, results) {
-        session.send("Recognized Entity: %s", JSON.stringify(results.response));
-        builder.Prompts.attachment(session, "Prompts.attachment()\n\nYour bot can wait on the user to upload an image or video. Send me an image and I'll send it back to you.");
+        if (results && results.response) {
+            session.send("Recognized Entity: %s", JSON.stringify(results.response));
+            builder.Prompts.attachment(session, "Prompts.attachment()\n\nYour bot can wait on the user to upload an image or video. Send me an image and I'll send it back to you.");
+        } else {
+            session.endDialog("You canceled.");
+        }
     },
     function (session, results) {
-        var msg = new builder.Message(session)
-            .ntext("I got %d attachment.", "I got %d attachments.", results.response.length);
-        results.response.forEach(function (attachment) {
-            msg.addAttachment(attachment);    
-        });
-        session.endDialog(msg);
+        if (results && results.response) {
+            var msg = new builder.Message(session)
+                .ntext("I got %d attachment.", "I got %d attachments.", results.response.length);
+            results.response.forEach(function (attachment) {
+                msg.addAttachment(attachment);    
+            });
+            session.endDialog(msg);
+        } else {
+            session.endDialog("You canceled.");
+        }
     }
 ]);
 
@@ -139,13 +207,15 @@ bot.dialog('/picture', [
 
 bot.dialog('/cards', [
     function (session) {
-        session.send("You can use either a Hero or a Thumbnail card to send the user visually rich information. On Facebook both will be rendered using the same Generic Template...");
+        session.send("You can use Hero & Thumbnail cards to send the user a visually rich information...");
 
         var msg = new builder.Message(session)
+            .textFormat(builder.TextFormat.xml)
             .attachments([
                 new builder.HeroCard(session)
                     .title("Hero Card")
-                    .subtitle("The Space Needle is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
+                    .subtitle("Space Needle")
+                    .text("The <b>Space Needle</b> is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/320px-Seattlenighttimequeenanne.jpg")
                     ])
@@ -154,10 +224,12 @@ bot.dialog('/cards', [
         session.send(msg);
 
         msg = new builder.Message(session)
+            .textFormat(builder.TextFormat.xml)
             .attachments([
                 new builder.ThumbnailCard(session)
                     .title("Thumbnail Card")
-                    .subtitle("Pike Place Market is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
+                    .subtitle("Pikes Place Market")
+                    .text("<b>Pike Place Market</b> is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/PikePlaceMarket.jpg/320px-PikePlaceMarket.jpg")
                     ])
@@ -169,19 +241,22 @@ bot.dialog('/cards', [
 
 bot.dialog('/list', [
     function (session) {
-        session.send("You can send the user a list of cards as multiple attachments in a single message...");
+        session.send("You can send the user a list of cards...");
 
         var msg = new builder.Message(session)
+            .textFormat(builder.TextFormat.xml)
             .attachments([
                 new builder.HeroCard(session)
-                    .title("Space Needle")
-                    .subtitle("The Space Needle is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
+                    .title("Hero Card")
+                    .subtitle("Space Needle")
+                    .text("The <b>Space Needle</b> is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/320px-Seattlenighttimequeenanne.jpg")
                     ]),
-                new builder.HeroCard(session)
-                    .title("Pikes Place Market")
-                    .subtitle("Pike Place Market is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
+                new builder.ThumbnailCard(session)
+                    .title("Thumbnail Card")
+                    .subtitle("Pikes Place Market")
+                    .text("<b>Pike Place Market</b> is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/PikePlaceMarket.jpg/320px-PikePlaceMarket.jpg")
                     ])
@@ -196,11 +271,12 @@ bot.dialog('/carousel', [
         
         // Ask the user to select an item from a carousel.
         var msg = new builder.Message(session)
+            .textFormat(builder.TextFormat.xml)
             .attachmentLayout(builder.AttachmentLayout.carousel)
             .attachments([
                 new builder.HeroCard(session)
                     .title("Space Needle")
-                    .subtitle("The Space Needle is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
+                    .text("The <b>Space Needle</b> is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/320px-Seattlenighttimequeenanne.jpg")
                             .tap(builder.CardAction.showImage(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/800px-Seattlenighttimequeenanne.jpg")),
@@ -211,7 +287,7 @@ bot.dialog('/carousel', [
                     ]),
                 new builder.HeroCard(session)
                     .title("Pikes Place Market")
-                    .subtitle("Pike Place Market is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
+                    .text("<b>Pike Place Market</b> is a public market overlooking the Elliott Bay waterfront in Seattle, Washington, United States.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/PikePlaceMarket.jpg/320px-PikePlaceMarket.jpg")
                             .tap(builder.CardAction.showImage(session, "https://upload.wikimedia.org/wikipedia/en/thumb/2/2a/PikePlaceMarket.jpg/800px-PikePlaceMarket.jpg")),
@@ -222,7 +298,7 @@ bot.dialog('/carousel', [
                     ]),
                 new builder.HeroCard(session)
                     .title("EMP Museum")
-                    .subtitle("EMP Musem is a leading-edge nonprofit museum, dedicated to the ideas and risk-taking that fuel contemporary popular culture.")
+                    .text("<b>EMP Musem</b> is a leading-edge nonprofit museum, dedicated to the ideas and risk-taking that fuel contemporary popular culture.")
                     .images([
                         builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Night_Exterior_EMP.jpg/320px-Night_Exterior_EMP.jpg")
                             .tap(builder.CardAction.showImage(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Night_Exterior_EMP.jpg/800px-Night_Exterior_EMP.jpg"))
@@ -235,31 +311,37 @@ bot.dialog('/carousel', [
         builder.Prompts.choice(session, msg, "select:100|select:101|select:102");
     },
     function (session, results) {
-        var action, item;
-        var kvPair = results.response.entity.split(':');
-        switch (kvPair[0]) {
-            case 'select':
-                action = 'selected';
-                break;
+        if (results.response) {
+            var action, item;
+            var kvPair = results.response.entity.split(':');
+            switch (kvPair[0]) {
+                case 'select':
+                    action = 'selected';
+                    break;
+            }
+            switch (kvPair[1]) {
+                case '100':
+                    item = "the <b>Space Needle</b>";
+                    break;
+                case '101':
+                    item = "<b>Pikes Place Market</b>";
+                    break;
+                case '101':
+                    item = "the <b>EMP Museum</b>";
+                    break;
+            }
+            session.endDialog('You %s "%s"', action, item);
+        } else {
+            session.endDialog("You canceled.");
         }
-        switch (kvPair[1]) {
-            case '100':
-                item = "the Space Needle";
-                break;
-            case '101':
-                item = "Pikes Place Market";
-                break;
-            case '102':
-                item = "the EMP Museum";
-                break;
-        }
-        session.endDialog('You %s "%s"', action, item);
     }    
 ]);
 
 bot.dialog('/receipt', [
     function (session) {
-        session.send("You can send a receipts for facebook using Bot Builders ReceiptCard...");
+        session.send("You can send a receipts for purchased good with both images and without...");
+        
+        // Send a receipt with images
         var msg = new builder.Message(session)
             .attachments([
                 new builder.ReceiptCard(session)
@@ -270,101 +352,47 @@ bot.dialog('/receipt', [
                     ])
                     .facts([
                         builder.Fact.create(session, "1234567898", "Order Number"),
-                        builder.Fact.create(session, "VISA 4076", "Payment Method")
+                        builder.Fact.create(session, "VISA 4076", "Payment Method"),
+                        builder.Fact.create(session, "WILLCALL", "Delivery Method")
                     ])
                     .tax("$4.40")
                     .total("$48.40")
             ]);
         session.send(msg);
 
-        session.send("Or using facebooks native attachment schema...");
+        // Send a receipt without images
         msg = new builder.Message(session)
-            .sourceEvent({
-                facebook: {
-                    attachment: {
-                        type: "template",
-                        payload: {
-                            template_type: "receipt",
-                            recipient_name: "Stephane Crozatier",
-                            order_number: "12345678902",
-                            currency: "USD",
-                            payment_method: "Visa 2345",        
-                            order_url: "http://petersapparel.parseapp.com/order?order_id=123456",
-                            timestamp: "1428444852", 
-                            elements: [
-                                {
-                                    title: "Classic White T-Shirt",
-                                    subtitle: "100% Soft and Luxurious Cotton",
-                                    quantity: 2,
-                                    price: 50,
-                                    currency: "USD",
-                                    image_url: "http://petersapparel.parseapp.com/img/whiteshirt.png"
-                                },
-                                {
-                                    title: "Classic Gray T-Shirt",
-                                    subtitle: "100% Soft and Luxurious Cotton",
-                                    quantity: 1,
-                                    price: 25,
-                                    currency: "USD",
-                                    image_url: "http://petersapparel.parseapp.com/img/grayshirt.png"
-                                }
-                            ],
-                            address: {
-                                street_1: "1 Hacker Way",
-                                street_2: "",
-                                city: "Menlo Park",
-                                postal_code: "94025",
-                                state: "CA",
-                                country: "US"
-                            },
-                            summary: {
-                                subtotal: 75.00,
-                                shipping_cost: 4.95,
-                                total_tax: 6.19,
-                                total_cost: 56.14
-                            },
-                            adjustments: [
-                                { name: "New Customer Discount", amount: 20 },
-                                { name: "$10 Off Coupon", amount: 10 }
-                            ]
-                        }
-                    }
-                }
-            });
+            .attachments([
+                new builder.ReceiptCard(session)
+                    .title("Recipient's Name")
+                    .items([
+                        builder.ReceiptItem.create(session, "$22.00", "EMP Museum"),
+                        builder.ReceiptItem.create(session, "$22.00", "Space Needle")
+                    ])
+                    .facts([
+                        builder.Fact.create(session, "1234567898", "Order Number"),
+                        builder.Fact.create(session, "VISA 4076", "Payment Method"),
+                        builder.Fact.create(session, "WILLCALL", "Delivery Method")
+                    ])
+                    .tax("$4.40")
+                    .total("$48.40")
+            ]);
         session.endDialog(msg);
     }
 ]);
 
-bot.dialog('/actions', [
+bot.dialog('/signin', [ 
     function (session) { 
-        session.send("Bots can register global actions, like the 'help' & 'goodbye' actions, that can respond to user input at any time. You can even bind actions to buttons on a card.");
-
-        var msg = new builder.Message(session)
-            .attachments([
-                new builder.HeroCard(session)
-                    .title("Space Needle")
-                    .subtitle("The Space Needle is an observation tower in Seattle, Washington, a landmark of the Pacific Northwest, and an icon of Seattle.")
-                    .images([
-                        builder.CardImage.create(session, "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Seattlenighttimequeenanne.jpg/320px-Seattlenighttimequeenanne.jpg")
-                    ])
-                    .buttons([
-                        builder.CardAction.dialogAction(session, "weather", "Seattle, WA", "Current Weather")
-                    ])
-            ]);
-        session.send(msg);
-
-        session.endDialog("The 'Current Weather' button on the card above can be pressed at any time regardless of where the user is in the conversation with the bot. The bot can even show the weather after the conversation has ended.");
-    }
-]);
-
-// Create a dialog and bind it to a global action
-bot.dialog('/weather', [
-    function (session, args) {
-        session.endDialog("The weather in %s is 71 degrees and raining.", args.data);
-    }
-]);
-bot.beginDialogAction('weather', '/weather');   // <-- no 'matches' option means this can only be triggered by a button.
-
+        // Send a signin 
+        var msg = new builder.Message(session) 
+            .attachments([ 
+                new builder.SigninCard(session) 
+                    .title("You must first signin to your account.") 
+                    .button("signin", "http://example.com/") 
+            ]); 
+        session.endDialog(msg); 
+    } 
+]); 
 
 if (useEmulator) {
     var restify = require('restify');
