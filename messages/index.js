@@ -33,7 +33,7 @@ function mainRouter(message) {
   return 'main';
 }
 
-bot.dialog('/dude', [
+bot.dialog('/', [
   function (session, args, next) {
 
     // Prompt user for next field
@@ -47,7 +47,7 @@ bot.dialog('/dude', [
     }
   },
   function (session, results) {
-    session.replaceDialog('/dude')
+    session.replaceDialog('/')
   },
   function (session, results) {
     session.send('thanks dude, all done for now')
