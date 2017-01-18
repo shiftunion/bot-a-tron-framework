@@ -16,6 +16,7 @@ var connector = useEmulator ? new builder.ChatConnector() : new botbuilder_azure
 
 var bot = new builder.UniversalBot(connector);
 
+
 //server.post('/api/messages', connector.listen());
 
 //=========================================================
