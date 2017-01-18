@@ -2,7 +2,7 @@
 
 var builder = require("botbuilder");
 var botbuilder_azure = require("botbuilder-azure");
-require('dotenv').load();
+//require('dotenv').load();
 var request = require('request');
 var journal = require('./journal')
 
